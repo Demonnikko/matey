@@ -1294,7 +1294,7 @@
       const notifyKey = `tg_notified_${source}`;
       // Проверяем, отправляли ли мы уведомление для ЭТОГО источника
       if (source && !sessionStorage.getItem(notifyKey)) {
-        const text = `🚀 *Новый посетитель!*\n\n📍 *Источник:* ${source}\n💬 *Тип:* ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 [Посмотреть в Метрике](https://metrika.yandex.ru/dashboard?id=106795279)`;
+        const text = `🚀 <b>Новый посетитель!</b>\n\n📍 <b>Источник:</b> ${source}\n💬 <b>Тип:</b> ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 <a href="https://metrika.yandex.ru/dashboard?id=106795279">Посмотреть в Метрике</a>`;
 
         try {
           await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
@@ -1303,7 +1303,7 @@
             body: JSON.stringify({
               chat_id: TG_CHAT_ID,
               text: text,
-              parse_mode: 'Markdown'
+              parse_mode: 'HTML'
             })
           });
           sessionStorage.setItem(notifyKey, 'true');
@@ -1329,7 +1329,7 @@
           // Также отправляем в ТГ инфо о клике на "Купить"
           const urlParams = new URLSearchParams(window.location.search);
           const source = urlParams.get('utm_source') || 'Прямой заход';
-          const clickMsg = `🎟 *Клик по кнопке КУПИТЬ!*\nИсточник: ${source}`;
+          const clickMsg = `🎟 <b>Клик по кнопке КУПИТЬ!</b>\nИсточник: ${source}`;
 
           fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
             method: 'POST',
@@ -1337,7 +1337,7 @@
             body: JSON.stringify({
               chat_id: TG_CHAT_ID,
               text: clickMsg,
-              parse_mode: 'Markdown'
+              parse_mode: 'HTML'
             })
           });
         });
