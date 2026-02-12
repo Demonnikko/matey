@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перенаправление на покупку билетов...</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: "Inter", -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader {
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        a {
+            color: #ffd700;
+            text-decoration: underline;
+        }
+    </style>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function (m, e, t, r, i, k, a) {
+            m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+            m[i].l = 1 * new Date();
+            for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+            k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+        })
+            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+        ym(106795279, "init", {
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true,
+            webvisor: true
+        });
+    </script>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/106795279" style="position:absolute; left:-9999px;" alt="" /></div>
+    </noscript>
+    <!-- /Yandex.Metrika counter -->
+</head>
+
+<body>
+    <div class="loader"></div>
+    <p>Пожалуйста, подождите.<br>Мы проверяем наличие билетов...</p>
+    <p><small>Если переход не произошел автоматически через секунду, <a id="manualLink" href="#">нажмите
+                здесь</a>.</small></p>
+
+    <script>
+        const TG_TOKEN = "7447528350:AAEXoBesH_21TzRLlR6SLfsC48WeneYEzGk";
+        const TG_CHAT_ID = "269357522";
+        const TARGET_URL = "https://quicktickets.ru/yaroslavl-illyuzionist-dmitrij-kostyuk/s6";
+
+        // Формируем целевую ссылку, сохраняя все метки
+        const currentParams = window.location.search;
+        const finalRedirectUrl = TARGET_URL + currentParams;
+
+        document.getElementById('manualLink').href = finalRedirectUrl;
+
+        async function notifyAndRedirect() {
+            const urlParams = new URLSearchParams(currentParams);
+            const source = urlParams.get('utm_source') || 'Неизвестный источник';
+
+            // Отправляем уведомление
+            const text = `🎟 *Переход на покупку билетов (Quick Tickets)*\n\n📍 *Источник:* ${source}`;
+
+            try {
+                // Отправляем запрос без ожидания ответа, чтобы не задерживать пользователя
+                fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TG_CHAT_ID,
+                        text: text,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            } catch (e) {
+                console.error("Ошибка:", e);
+            }
+
+            // Небольшая задержка перед редиректом (0.8 сек), чтобы пользователь увидел загрузчик
+            // и чтобы запрос успел уйти
+            setTimeout(() => {
+                window.location.href = finalRedirectUrl;
+            }, 800);
+        }
+
+        window.onload = notifyAndRedirect;
+    </script>
+</body>
+
+</html>
