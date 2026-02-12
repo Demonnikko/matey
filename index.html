@@ -1291,8 +1291,9 @@
       const medium = urlParams.get('utm_medium');
       const campaign = urlParams.get('utm_campaign');
 
-      // Проверяем, отправляли ли мы уведомление в этой сессии, чтобы не спамить при перезагрузке
-      if (source && !sessionStorage.getItem('tg_notified')) {
+      const notifyKey = `tg_notified_${source}`;
+      // Проверяем, отправляли ли мы уведомление для ЭТОГО источника
+      if (source && !sessionStorage.getItem(notifyKey)) {
         const text = `🚀 *Новый посетитель!*\n\n📍 *Источник:* ${source}\n💬 *Тип:* ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 [Посмотреть в Метрике](https://metrika.yandex.ru/dashboard?id=106795279)`;
 
         try {
@@ -1305,7 +1306,7 @@
               parse_mode: 'Markdown'
             })
           });
-          sessionStorage.setItem('tg_notified', 'true');
+          sessionStorage.setItem(notifyKey, 'true');
         } catch (e) {
           console.error("Ошибка отправки в ТГ:", e);
         }
