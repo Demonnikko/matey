@@ -1283,7 +1283,7 @@
 
     // --- Telegram Notification Logic ---
     const TG_TOKEN = "7447528350:AAEXoBesH_21TzRLlR6SLfsC48WeneYEzGk";
-    const TG_CHAT_ID = "269357522";
+    const TG_CHAT_IDS = ["269357522", "217259262"]; // Ваш ID и ID Станислава
 
     const sendTgNotification = async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -1292,20 +1292,22 @@
       const campaign = urlParams.get('utm_campaign');
 
       const notifyKey = `tg_notified_${source}`;
-      // Проверяем, отправляли ли мы уведомление для ЭТОГО источника
       if (source && !sessionStorage.getItem(notifyKey)) {
         const text = `🚀 <b>Новый посетитель!</b>\n\n📍 <b>Источник:</b> ${source}\n💬 <b>Тип:</b> ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 <a href="https://metrika.yandex.ru/dashboard?id=106795279">Посмотреть в Метрике</a>`;
 
         try {
-          await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: TG_CHAT_ID,
-              text: text,
-              parse_mode: 'HTML'
-            })
-          });
+          // Отправка обоим пользователям
+          for (const chatId of TG_CHAT_IDS) {
+            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: text,
+                parse_mode: 'HTML'
+              })
+            });
+          }
           sessionStorage.setItem(notifyKey, 'true');
         } catch (e) {
           console.error("Ошибка отправки в ТГ:", e);
@@ -1326,20 +1328,21 @@
         btn.addEventListener("click", () => {
           ym(106795279, 'reachGoal', 'BUY_CLICK');
 
-          // Также отправляем в ТГ инфо о клике на "Купить"
           const urlParams = new URLSearchParams(window.location.search);
           const source = urlParams.get('utm_source') || 'Прямой заход';
           const clickMsg = `🎟 <b>Клик по кнопке КУПИТЬ!</b>\nИсточник: ${source}`;
 
-          fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: TG_CHAT_ID,
-              text: clickMsg,
-              parse_mode: 'HTML'
-            })
-          });
+          for (const chatId of TG_CHAT_IDS) {
+            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: clickMsg,
+                parse_mode: 'HTML'
+              })
+            });
+          }
         });
       });
   </script>

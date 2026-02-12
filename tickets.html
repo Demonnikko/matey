@@ -81,10 +81,9 @@
 
     <script>
         const TG_TOKEN = "7447528350:AAEXoBesH_21TzRLlR6SLfsC48WeneYEzGk";
-        const TG_CHAT_ID = "269357522";
+        const TG_CHAT_IDS = ["269357522", "217259262"]; // Дмитрий и Станислав
         const TARGET_URL = "https://quicktickets.ru/yaroslavl-illyuzionist-dmitrij-kostyuk/s6";
 
-        // Формируем целевую ссылку, сохраняя все метки
         const currentParams = window.location.search;
         const finalRedirectUrl = TARGET_URL + currentParams;
 
@@ -93,27 +92,26 @@
         async function notifyAndRedirect() {
             const urlParams = new URLSearchParams(currentParams);
             const source = urlParams.get('utm_source') || 'Неизвестный источник';
+            const campaign = urlParams.get('utm_campaign') || 'Не указана';
 
-            // Отправляем уведомление
-            const text = `🎟 <b>Переход на покупку билетов (Quick Tickets)</b>\n\n📍 <b>Источник:</b> ${source}`;
+            const text = `🎟 <b>Прямой переход на покупку!</b>\n\n📍 <b>Источник:</b> ${source}\n📂 Кампания: ${campaign}`;
 
             try {
-                // Отправляем запрос без ожидания ответа, чтобы не задерживать пользователя
-                fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: TG_CHAT_ID,
-                        text: text,
-                        parse_mode: 'HTML'
-                    })
-                });
+                for (const chatId of TG_CHAT_IDS) {
+                    fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: text,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                }
             } catch (e) {
                 console.error("Ошибка:", e);
             }
 
-            // Небольшая задержка перед редиректом (0.8 сек), чтобы пользователь увидел загрузчик
-            // и чтобы запрос успел уйти
             setTimeout(() => {
                 window.location.href = finalRedirectUrl;
             }, 800);
