@@ -1281,6 +1281,40 @@
       }
     }
 
+    // --- Telegram Notification Logic ---
+    const TG_TOKEN = "7447528350:AAEXoBesH_21TzRLlR6SLfsC48WeneYEzGk";
+    const TG_CHAT_ID = "269357522";
+
+    const sendTgNotification = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const source = urlParams.get('utm_source');
+      const medium = urlParams.get('utm_medium');
+      const campaign = urlParams.get('utm_campaign');
+
+      // Проверяем, отправляли ли мы уведомление в этой сессии, чтобы не спамить при перезагрузке
+      if (source && !sessionStorage.getItem('tg_notified')) {
+        const text = `🚀 *Новый посетитель!*\n\n📍 *Источник:* ${source}\n💬 *Тип:* ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 [Посмотреть в Метрике](https://metrika.yandex.ru/dashboard?id=106795279)`;
+
+        try {
+          await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TG_CHAT_ID,
+              text: text,
+              parse_mode: 'Markdown'
+            })
+          });
+          sessionStorage.setItem('tg_notified', 'true');
+        } catch (e) {
+          console.error("Ошибка отправки в ТГ:", e);
+        }
+      }
+    };
+
+    // Запускаем проверку при загрузке
+    sendTgNotification();
+
     document
       .querySelectorAll(".buy-tickets-btn, .final-button")
       .forEach((btn) => {
@@ -1290,6 +1324,21 @@
         btn.addEventListener("mouseenter", spawnSparks);
         btn.addEventListener("click", () => {
           ym(106795279, 'reachGoal', 'BUY_CLICK');
+
+          // Также отправляем в ТГ инфо о клике на "Купить"
+          const urlParams = new URLSearchParams(window.location.search);
+          const source = urlParams.get('utm_source') || 'Прямой заход';
+          const clickMsg = `🎟 *Клик по кнопке КУПИТЬ!*\nИсточник: ${source}`;
+
+          fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TG_CHAT_ID,
+              text: clickMsg,
+              parse_mode: 'Markdown'
+            })
+          });
         });
       });
   </script>
