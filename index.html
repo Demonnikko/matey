@@ -1296,17 +1296,10 @@
         const text = `🚀 <b>Новый посетитель!</b>\n\n📍 <b>Источник:</b> ${source}\n💬 <b>Тип:</b> ${medium || 'не указан'}\nКампания: ${campaign || 'не указана'}\n\n📱 <a href="https://metrika.yandex.ru/dashboard?id=106795279">Посмотреть в Метрике</a>`;
 
         try {
-          // Отправка обоим пользователям
+          // Отправка обоим пользователям через GET (быстрее и надежнее)
           for (const chatId of TG_CHAT_IDS) {
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: text,
-                parse_mode: 'HTML'
-              })
-            });
+            const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=HTML`;
+            fetch(url, { method: 'GET' });
           }
           sessionStorage.setItem(notifyKey, 'true');
         } catch (e) {
@@ -1333,15 +1326,8 @@
           const clickMsg = `🎟 <b>Клик по кнопке КУПИТЬ!</b>\nИсточник: ${source}`;
 
           for (const chatId of TG_CHAT_IDS) {
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: clickMsg,
-                parse_mode: 'HTML'
-              })
-            });
+            const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(clickMsg)}&parse_mode=HTML`;
+            fetch(url, { method: 'GET' });
           }
         });
       });
