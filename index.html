@@ -983,49 +983,15 @@
       </div>
     </div>
 
-    <!-- Блок 2.5: Новый блок (ID 2) -->
-    <div class="block video-block" id="videoBlock2">
-      <div class="video-container" id="videoContainer2">
-        <div class="video-placeholder">Видео заглушка</div>
-      </div>
-      <div class="video-message" id="videoMessage2">
-        Иногда нам достаточно просто быть рядом, и в этот момент рождается что-то новое.
-      </div>
-      <div class="scroll-down-wrap video-scroll-wrap" id="videoScrollIndicator2">
-        <div class="chevrons">
-          <div class="chevron"></div>
-          <div class="chevron"></div>
-          <div class="chevron"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- Блок 3: Видео -->
     <div class="block video-block" id="videoBlock3">
       <div class="video-container" id="videoContainer3">
         <div class="video-placeholder">Видео заглушка</div>
       </div>
       <div class="video-message" id="videoMessage3">
-        Быть рядом важнее любого чуда
+        Быть рядом со своей семьёй важнее любого чуда.
       </div>
       <div class="scroll-down-wrap video-scroll-wrap" id="videoScrollIndicator3">
-        <div class="chevrons">
-          <div class="chevron"></div>
-          <div class="chevron"></div>
-          <div class="chevron"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Блок 4: Видео -->
-    <div class="block video-block" id="videoBlock4">
-      <div class="video-container" id="videoContainer4">
-        <div class="video-placeholder">Видео заглушка</div>
-      </div>
-      <div class="video-message" id="videoMessage4">
-        Финал истории зависит от вас
-      </div>
-      <div class="scroll-down-wrap video-scroll-wrap" id="videoScrollIndicator4">
         <div class="chevrons">
           <div class="chevron"></div>
           <div class="chevron"></div>
@@ -1040,10 +1006,10 @@
         <div class="video-placeholder">Видео заглушка</div>
       </div>
       <div class="video-message" id="videoMessage5">
-        Позаботьтесь о том, чтобы быть рядом заранее
+        Эта история уже случилась. Теперь она может случиться и с вами.
       </div>
       <div class="video-message" id="videoMessage5b">
-        Эта история уже случилась, теперь она может случиться и с вами
+        Позаботьтесь о том, чтобы быть рядом заранее.
       </div>
       <div class="final-info" id="finalInfo">
         <div class="hero-subtitle">Магический квест-спектакль</div>
@@ -1139,11 +1105,9 @@
       });
     };
 
-    // Инициализация блоков 2, 3, 4
-    setupVideoBlock(""); // Блок 2 (без суффикса в ID)
-    setupVideoBlock("2"); // Блок 2.5 (новый)
-    setupVideoBlock("3"); // Блок 3
-    setupVideoBlock("4"); // Блок 4
+    // Инициализация видео-блоков
+    setupVideoBlock(""); // Блок 1 (без суффикса в ID)
+    setupVideoBlock("3"); // Блок 2 (бывший блок 3)
 
     // Обработка финального блока (Блок 5)
     observeBlock("videoBlock5", async () => {

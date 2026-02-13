@@ -97,19 +97,18 @@
             const text = `🎟 <b>Прямой переход на покупку!</b>\n\n📍 <b>Источник:</b> ${source}\n📂 Кампания: ${campaign}`;
 
             try {
-                try {
-                    for (const chatId of TG_CHAT_IDS) {
-                        const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=HTML`;
-                        fetch(url, { method: 'GET' });
-                    }
-                } catch (e) {
-                    console.error("Ошибка:", e);
+                for (const chatId of TG_CHAT_IDS) {
+                    const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=HTML`;
+                    fetch(url, { method: 'GET' });
                 }
-
-                setTimeout(() => {
-                    window.location.href = finalRedirectUrl;
-                }, 800);
+            } catch (e) {
+                console.error("Ошибка:", e);
             }
+
+            setTimeout(() => {
+                window.location.href = finalRedirectUrl;
+            }, 800);
+        }
 
         window.onload = notifyAndRedirect;
     </script>
