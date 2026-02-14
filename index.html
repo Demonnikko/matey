@@ -968,7 +968,9 @@
     <!-- Блок 2: Видео -->
     <div class="block video-block" id="videoBlock">
       <div class="video-container" id="videoContainer">
-        <div class="video-placeholder">Видео заглушка</div>
+        <iframe id="vkVideo1" src="" width="100%" height="100%"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture" frameborder="0" allowfullscreen
+          style="position:absolute; top:0; left:0; width:100%; height:100%; aspect-ratio:16/9;"></iframe>
       </div>
       <div class="video-message" id="videoMessage">
         Мы часто стараемся для детей, но если ребёнок мечтает не о подарках,
@@ -1105,9 +1107,52 @@
       });
     };
 
-    // Инициализация видео-блоков
-    setupVideoBlock(""); // Блок 1 (без суффикса в ID)
-    setupVideoBlock("3"); // Блок 2 (бывший блок 3)
+    // === Блок 1: VK Видео (Акт 1) ===
+    const vkVideoUrl1 = "https://vk.com/video_ext.php?oid=-209268664&id=456239101&hd=2&autoplay=1&js_api=1";
+    {
+      const container = document.getElementById("videoContainer");
+      const message = document.getElementById("videoMessage");
+      const indicator = document.getElementById("videoScrollIndicator");
+      const iframe = document.getElementById("vkVideo1");
+
+      observeBlock("videoBlock", async () => {
+        // Загружаем видео только когда пользователь долистал
+        iframe.src = vkVideoUrl1;
+
+        await wait(300);
+        container.classList.add("appear"); // Видео появляется
+
+        // Ждём окончания видео через VK js_api или таймаут
+        await new Promise((resolve) => {
+          const handler = (event) => {
+            try {
+              if (typeof event.data === 'string') {
+                const data = JSON.parse(event.data);
+                if (data.event === 'videoEnd' || data.event === 'ended' ||
+                  (data.type === 'player' && data.data && data.data.event === 'ended')) {
+                  window.removeEventListener('message', handler);
+                  resolve();
+                }
+              }
+            } catch (e) { }
+          };
+          window.addEventListener('message', handler);
+          // Запасной таймаут 2 минуты
+          setTimeout(() => {
+            window.removeEventListener('message', handler);
+            resolve();
+          }, 120000);
+        });
+
+        container.classList.add("disappear"); // Видео исчезает
+        await wait(1500);
+        await typeWriter(message); // Печатаем текст
+        indicator.classList.add("visible"); // Стрелка
+      });
+    }
+
+    // === Блок 2: Заглушка (пока без видео) ===
+    setupVideoBlock("3");
 
     // Обработка финального блока (Блок 5)
     observeBlock("videoBlock5", async () => {
