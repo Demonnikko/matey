@@ -1002,7 +1002,6 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act1.m4v" type="video/mp4">
         </video>
-        <button class="video-unmute-btn" id="unmuteBtn1">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage">
         Мы часто стараемся для детей, но если ребёнок мечтает не о подарках,
@@ -1024,7 +1023,6 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act2.m4v" type="video/mp4">
         </video>
-        <button class="video-unmute-btn" id="unmuteBtn2">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage3">
         Быть рядом со своей семьёй важнее любого чуда.
@@ -1045,7 +1043,6 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act3.m4v" type="video/mp4">
         </video>
-        <button class="video-unmute-btn" id="unmuteBtn3">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage5">
         Эта история уже случилась. Теперь она может случиться и с вами.
@@ -1147,30 +1144,23 @@
       });
     };
 
-    // === Флаг: был ли клик/тап пользователя (для разрешения звука) ===
-    let userInteracted = false;
-    document.addEventListener('click', () => { userInteracted = true; }, { once: true });
-    document.addEventListener('touchstart', () => { userInteracted = true; }, { once: true });
-
     // === Функция воспроизведения видео со звуком ===
-    async function playVideoWithSound(video, unmuteBtn) {
+    async function playVideoWithSound(video) {
       video.muted = false;
       try {
         await video.play();
-        // Звук включён — кнопку не показываем
       } catch (e) {
-        // Браузер заблокировал автовоспроизведение со звуком — играем без звука + кнопка
+        // Браузер заблокировал со звуком — запускаем без звука, потом включаем
         video.muted = true;
         await video.play();
-        unmuteBtn.classList.add('visible');
-        unmuteBtn.textContent = '🔇 Нажмите для звука';
-        unmuteBtn.onclick = () => {
+        // При первом тапе на экран включаем звук
+        const unmute = () => {
           video.muted = false;
-          unmuteBtn.textContent = '🔊 Звук включён';
-          unmuteBtn.classList.remove('visible');
-          // Запоминаем что пользователь разрешил звук
-          userInteracted = true;
+          document.removeEventListener('touchstart', unmute);
+          document.removeEventListener('click', unmute);
         };
+        document.addEventListener('touchstart', unmute, { once: true });
+        document.addEventListener('click', unmute, { once: true });
       }
     }
 
@@ -1180,18 +1170,15 @@
       const video = document.getElementById("localVideo1");
       const message = document.getElementById("videoMessage");
       const indicator = document.getElementById("videoScrollIndicator");
-      const unmuteBtn = document.getElementById("unmuteBtn1");
 
       observeBlock("videoBlock", async () => {
         await wait(300);
         container.classList.add("appear");
 
-        await playVideoWithSound(video, unmuteBtn);
+        await playVideoWithSound(video);
 
-        // Ждём окончания видео
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-        unmuteBtn.classList.remove('visible');
         container.classList.add("disappear");
         await wait(1500);
 
@@ -1206,17 +1193,15 @@
       const video = document.getElementById("localVideo2");
       const message = document.getElementById("videoMessage3");
       const indicator = document.getElementById("videoScrollIndicator3");
-      const unmuteBtn = document.getElementById("unmuteBtn2");
 
       observeBlock("videoBlock3", async () => {
         await wait(300);
         container.classList.add("appear");
 
-        await playVideoWithSound(video, unmuteBtn);
+        await playVideoWithSound(video);
 
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-        unmuteBtn.classList.remove('visible');
         container.classList.add("disappear");
         await wait(1500);
 
@@ -1232,16 +1217,14 @@
       const msg1 = document.getElementById("videoMessage5");
       const msg2 = document.getElementById("videoMessage5b");
       const finalInfo = document.getElementById("finalInfo");
-      const unmuteBtn = document.getElementById("unmuteBtn3");
 
       await wait(300);
       container.classList.add("appear");
 
-      await playVideoWithSound(video, unmuteBtn);
+      await playVideoWithSound(video);
 
       await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-      unmuteBtn.classList.remove('visible');
       container.classList.add("disappear");
       await wait(1500);
 
