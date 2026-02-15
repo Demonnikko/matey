@@ -496,10 +496,7 @@
 
     .video-container.disappear {
       opacity: 0;
-      transform: scale(0.9);
-      transition:
-        opacity 0.8s ease-out,
-        transform 0.8s ease-out;
+      transition: opacity 0.3s ease-out;
     }
 
     /* Оверлей "Нажмите, чтобы начать" */
@@ -1305,6 +1302,8 @@
         await wait(29000); // Акт 1 — 29 секунд
 
         video.pause();
+        container.classList.add("disappear");
+        await wait(300);
         container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
@@ -1328,6 +1327,8 @@
         await wait(47000); // Акт 2 — 47 секунд
 
         video.pause();
+        container.classList.add("disappear");
+        await wait(300);
         container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
@@ -1351,6 +1352,8 @@
       await wait(80000); // Акт 3 — 1:20
 
       video.pause();
+      container.classList.add("disappear");
+      await wait(300);
       container.style.display = "none";
 
       await typeWriter(msg1);
