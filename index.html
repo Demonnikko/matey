@@ -502,6 +502,73 @@
         transform 1.5s ease-out;
     }
 
+    /* Оверлей "Нажмите, чтобы начать" */
+    .video-tap-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.08) 0%, #000 70%);
+      z-index: 6;
+      cursor: pointer;
+      transition: opacity 0.6s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .video-tap-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tap-play-icon {
+      width: 70px;
+      height: 70px;
+      border: 3px solid rgba(255, 215, 0, 0.6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+      animation: tapPulse 2s ease-in-out infinite;
+    }
+
+    .tap-play-icon::after {
+      content: "";
+      display: block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 12px 0 12px 22px;
+      border-color: transparent transparent transparent #ffd700;
+      margin-left: 5px;
+    }
+
+    .tap-text {
+      font-family: "Kenyan Coffee", "Impact", sans-serif;
+      font-size: 4.5vw;
+      color: rgba(255, 215, 0, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    @keyframes tapPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 60px rgba(255, 215, 0, 0.5);
+      }
+    }
+
+    /* Загрузчик (поверх видео, под оверлеем) */
     .video-loader {
       position: absolute;
       top: 0;
@@ -1018,7 +1085,11 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act1.m4v" type="video/mp4">
         </video>
-        <div class="video-loader" id="videoLoader1">
+        <div class="video-tap-overlay" id="videoTap1">
+          <div class="tap-play-icon"></div>
+          <div class="tap-text">Нажмите, чтобы начать</div>
+        </div>
+        <div class="video-loader hidden" id="videoLoader1">
           <div class="video-loader-ring"></div>
           <div class="video-loader-text">Загрузка...</div>
         </div>
@@ -1043,7 +1114,11 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act2.m4v" type="video/mp4">
         </video>
-        <div class="video-loader" id="videoLoader2">
+        <div class="video-tap-overlay" id="videoTap2">
+          <div class="tap-play-icon"></div>
+          <div class="tap-text">Нажмите, чтобы начать</div>
+        </div>
+        <div class="video-loader hidden" id="videoLoader2">
           <div class="video-loader-ring"></div>
           <div class="video-loader-text">Загрузка...</div>
         </div>
@@ -1067,7 +1142,11 @@
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act3.m4v" type="video/mp4">
         </video>
-        <div class="video-loader" id="videoLoader3">
+        <div class="video-tap-overlay" id="videoTap3">
+          <div class="tap-play-icon"></div>
+          <div class="tap-text">Нажмите, чтобы начать</div>
+        </div>
+        <div class="video-loader hidden" id="videoLoader3">
           <div class="video-loader-ring"></div>
           <div class="video-loader-text">Загрузка...</div>
         </div>
@@ -1172,12 +1251,26 @@
       });
     };
 
+    // === Ожидание тапа пользователя ===
+    function waitForTap(tapOverlay) {
+      return new Promise(resolve => {
+        tapOverlay.addEventListener('click', resolve, { once: true });
+      });
+    }
+
     // === Загрузка и воспроизведение видео со звуком ===
-    async function loadAndPlayVideo(video, loader) {
+    async function loadAndPlayVideo(video, tapOverlay, loader) {
+      // Ждём тап пользователя (это даёт разрешение на звук)
+      await waitForTap(tapOverlay);
+
+      // Прячем оверлей, показываем загрузчик
+      tapOverlay.classList.add('hidden');
+      loader.classList.remove('hidden');
+
       // Начинаем загрузку
       video.load();
 
-      // Ждём пока буферизуется достаточно для воспроизведения без пауз
+      // Ждём пока буферизуется достаточно
       await new Promise(resolve => {
         if (video.readyState >= 3) return resolve();
         video.addEventListener('canplay', resolve, { once: true });
@@ -1187,28 +1280,16 @@
       loader.classList.add('hidden');
       await wait(400);
 
-      // Запускаем со звуком
+      // Запускаем со звуком (тап уже был — браузер разрешит)
       video.muted = false;
-      try {
-        await video.play();
-      } catch (e) {
-        // Браузер заблокировал звук — играем без, при тапе включаем
-        video.muted = true;
-        await video.play();
-        const unmute = () => {
-          video.muted = false;
-          document.removeEventListener('touchstart', unmute);
-          document.removeEventListener('click', unmute);
-        };
-        document.addEventListener('touchstart', unmute, { once: true });
-        document.addEventListener('click', unmute, { once: true });
-      }
+      await video.play();
     }
 
     // === Блок 1: Видео (Акт 1) ===
     {
       const container = document.getElementById("videoContainer");
       const video = document.getElementById("localVideo1");
+      const tapOverlay = document.getElementById("videoTap1");
       const loader = document.getElementById("videoLoader1");
       const message = document.getElementById("videoMessage");
       const indicator = document.getElementById("videoScrollIndicator");
@@ -1216,7 +1297,7 @@
       observeBlock("videoBlock", async () => {
         container.classList.add("appear");
 
-        await loadAndPlayVideo(video, loader);
+        await loadAndPlayVideo(video, tapOverlay, loader);
 
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
@@ -1232,6 +1313,7 @@
     {
       const container = document.getElementById("videoContainer3");
       const video = document.getElementById("localVideo2");
+      const tapOverlay = document.getElementById("videoTap2");
       const loader = document.getElementById("videoLoader2");
       const message = document.getElementById("videoMessage3");
       const indicator = document.getElementById("videoScrollIndicator3");
@@ -1239,7 +1321,7 @@
       observeBlock("videoBlock3", async () => {
         container.classList.add("appear");
 
-        await loadAndPlayVideo(video, loader);
+        await loadAndPlayVideo(video, tapOverlay, loader);
 
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
@@ -1255,6 +1337,7 @@
     observeBlock("videoBlock5", async () => {
       const container = document.getElementById("videoContainer5");
       const video = document.getElementById("localVideo3");
+      const tapOverlay = document.getElementById("videoTap3");
       const loader = document.getElementById("videoLoader3");
       const msg1 = document.getElementById("videoMessage5");
       const msg2 = document.getElementById("videoMessage5b");
@@ -1262,7 +1345,7 @@
 
       container.classList.add("appear");
 
-      await loadAndPlayVideo(video, loader);
+      await loadAndPlayVideo(video, tapOverlay, loader);
 
       await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
