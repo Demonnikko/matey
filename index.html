@@ -998,9 +998,11 @@
     <!-- Блок 1: Видео (Акт 1) -->
     <div class="block video-block" id="videoBlock">
       <div class="video-container" id="videoContainer" style="position:relative;">
-        <iframe id="vkVideo1" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
-          style="aspect-ratio:16/9; border:none; display:block;"></iframe>
-        <button class="video-unmute-btn" id="unmuteBtn1" onclick="toggleMute(1)">🔇 Нажмите для звука</button>
+        <video id="localVideo1" playsinline preload="auto"
+          style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
+          <source src="video/act1.m4v" type="video/mp4">
+        </video>
+        <button class="video-unmute-btn" id="unmuteBtn1">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage">
         Мы часто стараемся для детей, но если ребёнок мечтает не о подарках,
@@ -1018,9 +1020,11 @@
     <!-- Блок 2: Видео (Акт 2) -->
     <div class="block video-block" id="videoBlock3">
       <div class="video-container" id="videoContainer3" style="position:relative;">
-        <iframe id="vkVideo2" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
-          style="aspect-ratio:16/9; border:none; display:block;"></iframe>
-        <button class="video-unmute-btn" id="unmuteBtn2" onclick="toggleMute(2)">🔇 Нажмите для звука</button>
+        <video id="localVideo2" playsinline preload="auto"
+          style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
+          <source src="video/act2.m4v" type="video/mp4">
+        </video>
+        <button class="video-unmute-btn" id="unmuteBtn2">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage3">
         Быть рядом со своей семьёй важнее любого чуда.
@@ -1037,9 +1041,11 @@
     <!-- Блок 3: Финальный (Акт 3) -->
     <div class="block video-block" id="videoBlock5">
       <div class="video-container" id="videoContainer5" style="position:relative;">
-        <iframe id="vkVideo3" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
-          style="aspect-ratio:16/9; border:none; display:block;"></iframe>
-        <button class="video-unmute-btn" id="unmuteBtn3" onclick="toggleMute(3)">🔇 Нажмите для звука</button>
+        <video id="localVideo3" playsinline preload="auto"
+          style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
+          <source src="video/act3.m4v" type="video/mp4">
+        </video>
+        <button class="video-unmute-btn" id="unmuteBtn3">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage5">
         Эта история уже случилась. Теперь она может случиться и с вами.
@@ -1141,74 +1147,51 @@
       });
     };
 
-    // === Функция включения звука через VK API ===
-    const muteState = { 1: true, 2: true, 3: true };
-    function toggleMute(num) {
-      const iframe = document.getElementById('vkVideo' + num);
-      const btn = document.getElementById('unmuteBtn' + num);
-      if (muteState[num]) {
-        iframe.contentWindow.postMessage(JSON.stringify({ type: 'command', data: 'unmute' }), '*');
-        btn.textContent = '🔊 Звук включён';
-        muteState[num] = false;
-      } else {
-        iframe.contentWindow.postMessage(JSON.stringify({ type: 'command', data: 'mute' }), '*');
-        btn.textContent = '🔇 Нажмите для звука';
-        muteState[num] = true;
+    // === Флаг: был ли клик/тап пользователя (для разрешения звука) ===
+    let userInteracted = false;
+    document.addEventListener('click', () => { userInteracted = true; }, { once: true });
+    document.addEventListener('touchstart', () => { userInteracted = true; }, { once: true });
+
+    // === Функция воспроизведения видео со звуком ===
+    async function playVideoWithSound(video, unmuteBtn) {
+      video.muted = false;
+      try {
+        await video.play();
+        // Звук включён — кнопку не показываем
+      } catch (e) {
+        // Браузер заблокировал автовоспроизведение со звуком — играем без звука + кнопка
+        video.muted = true;
+        await video.play();
+        unmuteBtn.classList.add('visible');
+        unmuteBtn.textContent = '🔇 Нажмите для звука';
+        unmuteBtn.onclick = () => {
+          video.muted = false;
+          unmuteBtn.textContent = '🔊 Звук включён';
+          unmuteBtn.classList.remove('visible');
+          // Запоминаем что пользователь разрешил звук
+          userInteracted = true;
+        };
       }
     }
 
-    // === Блок 1: VK Видео (Акт 1) ===
-    const VIDEO_1_DURATION = 28;
-    const vkVideoUrl1 = "https://vk.com/video_ext.php?oid=-209268664&id=456239101&hd=2&autoplay=1&js_api=1";
+    // === Блок 1: Видео (Акт 1) ===
     {
       const container = document.getElementById("videoContainer");
+      const video = document.getElementById("localVideo1");
       const message = document.getElementById("videoMessage");
       const indicator = document.getElementById("videoScrollIndicator");
-      const iframe = document.getElementById("vkVideo1");
+      const unmuteBtn = document.getElementById("unmuteBtn1");
 
       observeBlock("videoBlock", async () => {
-        // Загружаем видео только когда пользователь долистал
-        iframe.src = vkVideoUrl1;
-
-        await wait(500);
+        await wait(300);
         container.classList.add("appear");
-        document.getElementById('unmuteBtn1').classList.add('visible');
 
-        await wait(VIDEO_1_DURATION * 1000);
+        await playVideoWithSound(video, unmuteBtn);
 
-        iframe.src = "";
-        iframe.style.display = "none";
-        document.getElementById('unmuteBtn1').classList.remove('visible');
+        // Ждём окончания видео
+        await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-        container.classList.add("disappear"); // Видео плавно уходит
-        await wait(1500);
-
-        await typeWriter(message); // Печатаем текст
-        indicator.classList.add("visible"); // Стрелка вниз
-      });
-    }
-
-    // === Блок 2: VK Видео (Акт 2) ===
-    const VIDEO_2_DURATION = 46;
-    const vkVideoUrl2 = "https://vk.com/video_ext.php?oid=-209268664&id=456239105&hd=2&autoplay=1&js_api=1";
-    {
-      const container = document.getElementById("videoContainer3");
-      const message = document.getElementById("videoMessage3");
-      const indicator = document.getElementById("videoScrollIndicator3");
-      const iframe = document.getElementById("vkVideo2");
-
-      observeBlock("videoBlock3", async () => {
-        iframe.src = vkVideoUrl2;
-        await wait(500);
-        container.classList.add("appear");
-        document.getElementById('unmuteBtn2').classList.add('visible');
-
-        await wait(VIDEO_2_DURATION * 1000);
-
-        iframe.src = "";
-        iframe.style.display = "none";
-        document.getElementById('unmuteBtn2').classList.remove('visible');
-
+        unmuteBtn.classList.remove('visible');
         container.classList.add("disappear");
         await wait(1500);
 
@@ -1217,45 +1200,66 @@
       });
     }
 
-    // === Блок 3: VK Видео (Акт 3) — Финальный ===
-    const VIDEO_3_DURATION = 79;
-    const vkVideoUrl3 = "https://vk.com/video_ext.php?oid=-209268664&id=456239106&hd=2&autoplay=1&js_api=1";
+    // === Блок 2: Видео (Акт 2) ===
+    {
+      const container = document.getElementById("videoContainer3");
+      const video = document.getElementById("localVideo2");
+      const message = document.getElementById("videoMessage3");
+      const indicator = document.getElementById("videoScrollIndicator3");
+      const unmuteBtn = document.getElementById("unmuteBtn2");
+
+      observeBlock("videoBlock3", async () => {
+        await wait(300);
+        container.classList.add("appear");
+
+        await playVideoWithSound(video, unmuteBtn);
+
+        await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
+
+        unmuteBtn.classList.remove('visible');
+        container.classList.add("disappear");
+        await wait(1500);
+
+        await typeWriter(message);
+        indicator.classList.add("visible");
+      });
+    }
+
+    // === Блок 3: Видео (Акт 3) — Финальный ===
     observeBlock("videoBlock5", async () => {
       const container = document.getElementById("videoContainer5");
-      const iframe = document.getElementById("vkVideo3");
+      const video = document.getElementById("localVideo3");
       const msg1 = document.getElementById("videoMessage5");
       const msg2 = document.getElementById("videoMessage5b");
       const finalInfo = document.getElementById("finalInfo");
+      const unmuteBtn = document.getElementById("unmuteBtn3");
 
-      iframe.src = vkVideoUrl3;
-      await wait(500);
+      await wait(300);
       container.classList.add("appear");
-      document.getElementById('unmuteBtn3').classList.add('visible');
 
-      await wait(VIDEO_3_DURATION * 1000);
+      await playVideoWithSound(video, unmuteBtn);
 
-      iframe.src = "";
-      iframe.style.display = "none";
-      document.getElementById('unmuteBtn3').classList.remove('visible');
+      await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
+      unmuteBtn.classList.remove('visible');
       container.classList.add("disappear");
       await wait(1500);
 
-      await typeWriter(msg1); // Первый текст
+      await typeWriter(msg1);
 
       await wait(2000);
       msg1.style.transition = "opacity 0.5s ease";
       msg1.style.opacity = "0";
 
       await wait(500);
-      await typeWriter(msg2); // Второй текст
+      await typeWriter(msg2);
 
       await wait(2000);
       msg2.style.transition = "opacity 0.5s ease";
       msg2.style.opacity = "0";
 
       await wait(1000);
-      finalInfo.classList.add("appear"); // Финал
+      finalInfo.classList.add("appear");
       triggerExplosion();
     });
 
