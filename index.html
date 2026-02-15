@@ -502,6 +502,35 @@
         transform 1.5s ease-out;
     }
 
+    .video-unmute-btn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      color: #ffd700;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 25px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .video-unmute-btn.visible {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .video-unmute-btn:active {
+      background: rgba(255, 215, 0, 0.3);
+      transform: scale(0.95);
+    }
+
 
     .video-placeholder {
       width: 100%;
@@ -968,9 +997,10 @@
 
     <!-- Блок 1: Видео (Акт 1) -->
     <div class="block video-block" id="videoBlock">
-      <div class="video-container" id="videoContainer">
+      <div class="video-container" id="videoContainer" style="position:relative;">
         <iframe id="vkVideo1" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
           style="aspect-ratio:16/9; border:none; display:block;"></iframe>
+        <button class="video-unmute-btn" id="unmuteBtn1" onclick="toggleMute(1)">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage">
         Мы часто стараемся для детей, но если ребёнок мечтает не о подарках,
@@ -987,9 +1017,10 @@
 
     <!-- Блок 2: Видео (Акт 2) -->
     <div class="block video-block" id="videoBlock3">
-      <div class="video-container" id="videoContainer3">
+      <div class="video-container" id="videoContainer3" style="position:relative;">
         <iframe id="vkVideo2" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
           style="aspect-ratio:16/9; border:none; display:block;"></iframe>
+        <button class="video-unmute-btn" id="unmuteBtn2" onclick="toggleMute(2)">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage3">
         Быть рядом со своей семьёй важнее любого чуда.
@@ -1005,9 +1036,10 @@
 
     <!-- Блок 3: Финальный (Акт 3) -->
     <div class="block video-block" id="videoBlock5">
-      <div class="video-container" id="videoContainer5">
+      <div class="video-container" id="videoContainer5" style="position:relative;">
         <iframe id="vkVideo3" src="" width="100%" allow="autoplay; encrypted-media; picture-in-picture" frameborder="0"
           style="aspect-ratio:16/9; border:none; display:block;"></iframe>
+        <button class="video-unmute-btn" id="unmuteBtn3" onclick="toggleMute(3)">🔇 Нажмите для звука</button>
       </div>
       <div class="video-message" id="videoMessage5">
         Эта история уже случилась. Теперь она может случиться и с вами.
@@ -1109,10 +1141,25 @@
       });
     };
 
+    // === Функция включения звука через VK API ===
+    const muteState = { 1: true, 2: true, 3: true };
+    function toggleMute(num) {
+      const iframe = document.getElementById('vkVideo' + num);
+      const btn = document.getElementById('unmuteBtn' + num);
+      if (muteState[num]) {
+        iframe.contentWindow.postMessage(JSON.stringify({ type: 'command', data: 'unmute' }), '*');
+        btn.textContent = '🔊 Звук включён';
+        muteState[num] = false;
+      } else {
+        iframe.contentWindow.postMessage(JSON.stringify({ type: 'command', data: 'mute' }), '*');
+        btn.textContent = '🔇 Нажмите для звука';
+        muteState[num] = true;
+      }
+    }
+
     // === Блок 1: VK Видео (Акт 1) ===
-    // Длительность видео в секундах (поменять на точное значение!)
     const VIDEO_1_DURATION = 28;
-    const vkVideoUrl1 = "https://vk.com/video_ext.php?oid=-209268664&id=456239101&hd=2&autoplay=1";
+    const vkVideoUrl1 = "https://vk.com/video_ext.php?oid=-209268664&id=456239101&hd=2&autoplay=1&js_api=1";
     {
       const container = document.getElementById("videoContainer");
       const message = document.getElementById("videoMessage");
@@ -1124,14 +1171,14 @@
         iframe.src = vkVideoUrl1;
 
         await wait(500);
-        container.classList.add("appear"); // Видео плавно появляется издалека
+        container.classList.add("appear");
+        document.getElementById('unmuteBtn1').classList.add('visible');
 
-        // Ждём окончания видео (по таймеру)
         await wait(VIDEO_1_DURATION * 1000);
 
-        // Убиваем iframe (убирает рекламу и рекомендации VK)
         iframe.src = "";
         iframe.style.display = "none";
+        document.getElementById('unmuteBtn1').classList.remove('visible');
 
         container.classList.add("disappear"); // Видео плавно уходит
         await wait(1500);
@@ -1143,7 +1190,7 @@
 
     // === Блок 2: VK Видео (Акт 2) ===
     const VIDEO_2_DURATION = 46;
-    const vkVideoUrl2 = "https://vk.com/video_ext.php?oid=-209268664&id=456239105&hd=2&autoplay=1";
+    const vkVideoUrl2 = "https://vk.com/video_ext.php?oid=-209268664&id=456239105&hd=2&autoplay=1&js_api=1";
     {
       const container = document.getElementById("videoContainer3");
       const message = document.getElementById("videoMessage3");
@@ -1154,11 +1201,13 @@
         iframe.src = vkVideoUrl2;
         await wait(500);
         container.classList.add("appear");
+        document.getElementById('unmuteBtn2').classList.add('visible');
 
         await wait(VIDEO_2_DURATION * 1000);
 
         iframe.src = "";
         iframe.style.display = "none";
+        document.getElementById('unmuteBtn2').classList.remove('visible');
 
         container.classList.add("disappear");
         await wait(1500);
@@ -1170,7 +1219,7 @@
 
     // === Блок 3: VK Видео (Акт 3) — Финальный ===
     const VIDEO_3_DURATION = 79;
-    const vkVideoUrl3 = "https://vk.com/video_ext.php?oid=-209268664&id=456239106&hd=2&autoplay=1";
+    const vkVideoUrl3 = "https://vk.com/video_ext.php?oid=-209268664&id=456239106&hd=2&autoplay=1&js_api=1";
     observeBlock("videoBlock5", async () => {
       const container = document.getElementById("videoContainer5");
       const iframe = document.getElementById("vkVideo3");
@@ -1181,11 +1230,13 @@
       iframe.src = vkVideoUrl3;
       await wait(500);
       container.classList.add("appear");
+      document.getElementById('unmuteBtn3').classList.add('visible');
 
       await wait(VIDEO_3_DURATION * 1000);
 
       iframe.src = "";
       iframe.style.display = "none";
+      document.getElementById('unmuteBtn3').classList.remove('visible');
 
       container.classList.add("disappear");
       await wait(1500);
