@@ -502,33 +502,49 @@
         transform 1.5s ease-out;
     }
 
-    .video-unmute-btn {
+    .video-loader {
       position: absolute;
-      bottom: 15px;
-      right: 15px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid rgba(255, 215, 0, 0.5);
-      color: #ffd700;
-      font-size: 14px;
-      padding: 8px 16px;
-      border-radius: 25px;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      transition: all 0.3s ease;
-      display: none;
-    }
-
-    .video-unmute-btn.visible {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.06) 0%, #000 70%);
+      z-index: 5;
+      transition: opacity 0.8s ease;
     }
 
-    .video-unmute-btn:active {
-      background: rgba(255, 215, 0, 0.3);
-      transform: scale(0.95);
+    .video-loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .video-loader-ring {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 215, 0, 0.15);
+      border-top: 3px solid #ffd700;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+      margin-bottom: 20px;
+    }
+
+    .video-loader-text {
+      font-family: "Kenyan Coffee", "Impact", sans-serif;
+      font-size: 4vw;
+      color: rgba(255, 215, 0, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      animation: loaderPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes loaderPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
     }
 
 
@@ -998,10 +1014,14 @@
     <!-- Блок 1: Видео (Акт 1) -->
     <div class="block video-block" id="videoBlock">
       <div class="video-container" id="videoContainer" style="position:relative;">
-        <video id="localVideo1" playsinline preload="auto"
+        <video id="localVideo1" playsinline preload="none"
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act1.m4v" type="video/mp4">
         </video>
+        <div class="video-loader" id="videoLoader1">
+          <div class="video-loader-ring"></div>
+          <div class="video-loader-text">Загрузка...</div>
+        </div>
       </div>
       <div class="video-message" id="videoMessage">
         Мы часто стараемся для детей, но если ребёнок мечтает не о подарках,
@@ -1019,10 +1039,14 @@
     <!-- Блок 2: Видео (Акт 2) -->
     <div class="block video-block" id="videoBlock3">
       <div class="video-container" id="videoContainer3" style="position:relative;">
-        <video id="localVideo2" playsinline preload="auto"
+        <video id="localVideo2" playsinline preload="none"
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act2.m4v" type="video/mp4">
         </video>
+        <div class="video-loader" id="videoLoader2">
+          <div class="video-loader-ring"></div>
+          <div class="video-loader-text">Загрузка...</div>
+        </div>
       </div>
       <div class="video-message" id="videoMessage3">
         Быть рядом со своей семьёй важнее любого чуда.
@@ -1039,10 +1063,14 @@
     <!-- Блок 3: Финальный (Акт 3) -->
     <div class="block video-block" id="videoBlock5">
       <div class="video-container" id="videoContainer5" style="position:relative;">
-        <video id="localVideo3" playsinline preload="auto"
+        <video id="localVideo3" playsinline preload="none"
           style="width:100%; aspect-ratio:16/9; border-radius:12px; display:block; object-fit:cover;">
           <source src="video/act3.m4v" type="video/mp4">
         </video>
+        <div class="video-loader" id="videoLoader3">
+          <div class="video-loader-ring"></div>
+          <div class="video-loader-text">Загрузка...</div>
+        </div>
       </div>
       <div class="video-message" id="videoMessage5">
         Эта история уже случилась. Теперь она может случиться и с вами.
@@ -1144,16 +1172,29 @@
       });
     };
 
-    // === Функция воспроизведения видео со звуком ===
-    async function playVideoWithSound(video) {
+    // === Загрузка и воспроизведение видео со звуком ===
+    async function loadAndPlayVideo(video, loader) {
+      // Начинаем загрузку
+      video.load();
+
+      // Ждём пока буферизуется достаточно для воспроизведения без пауз
+      await new Promise(resolve => {
+        if (video.readyState >= 3) return resolve();
+        video.addEventListener('canplay', resolve, { once: true });
+      });
+
+      // Прячем загрузчик
+      loader.classList.add('hidden');
+      await wait(400);
+
+      // Запускаем со звуком
       video.muted = false;
       try {
         await video.play();
       } catch (e) {
-        // Браузер заблокировал со звуком — запускаем без звука, потом включаем
+        // Браузер заблокировал звук — играем без, при тапе включаем
         video.muted = true;
         await video.play();
-        // При первом тапе на экран включаем звук
         const unmute = () => {
           video.muted = false;
           document.removeEventListener('touchstart', unmute);
@@ -1168,14 +1209,14 @@
     {
       const container = document.getElementById("videoContainer");
       const video = document.getElementById("localVideo1");
+      const loader = document.getElementById("videoLoader1");
       const message = document.getElementById("videoMessage");
       const indicator = document.getElementById("videoScrollIndicator");
 
       observeBlock("videoBlock", async () => {
-        await wait(300);
         container.classList.add("appear");
 
-        await playVideoWithSound(video);
+        await loadAndPlayVideo(video, loader);
 
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
@@ -1191,14 +1232,14 @@
     {
       const container = document.getElementById("videoContainer3");
       const video = document.getElementById("localVideo2");
+      const loader = document.getElementById("videoLoader2");
       const message = document.getElementById("videoMessage3");
       const indicator = document.getElementById("videoScrollIndicator3");
 
       observeBlock("videoBlock3", async () => {
-        await wait(300);
         container.classList.add("appear");
 
-        await playVideoWithSound(video);
+        await loadAndPlayVideo(video, loader);
 
         await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
@@ -1214,14 +1255,14 @@
     observeBlock("videoBlock5", async () => {
       const container = document.getElementById("videoContainer5");
       const video = document.getElementById("localVideo3");
+      const loader = document.getElementById("videoLoader3");
       const msg1 = document.getElementById("videoMessage5");
       const msg2 = document.getElementById("videoMessage5b");
       const finalInfo = document.getElementById("finalInfo");
 
-      await wait(300);
       container.classList.add("appear");
 
-      await playVideoWithSound(video);
+      await loadAndPlayVideo(video, loader);
 
       await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
