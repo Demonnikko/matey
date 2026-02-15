@@ -1299,11 +1299,9 @@
 
         await loadAndPlayVideo(video, tapOverlay, loader);
 
-        await wait(29000); // Акт 1 — 29 секунд
+        // Ждём пока видео доиграет до конца само
+        await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-        video.pause();
-        container.classList.add("disappear");
-        await wait(300);
         container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
@@ -1324,11 +1322,8 @@
 
         await loadAndPlayVideo(video, tapOverlay, loader);
 
-        await wait(47000); // Акт 2 — 47 секунд
+        await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-        video.pause();
-        container.classList.add("disappear");
-        await wait(300);
         container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
@@ -1349,11 +1344,8 @@
 
       await loadAndPlayVideo(video, tapOverlay, loader);
 
-      await wait(80000); // Акт 3 — 1:20
+      await new Promise(resolve => video.addEventListener('ended', resolve, { once: true }));
 
-      video.pause();
-      container.classList.add("disappear");
-      await wait(300);
       container.style.display = "none";
 
       await typeWriter(msg1);
