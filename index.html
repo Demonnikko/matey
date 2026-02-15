@@ -1305,9 +1305,7 @@
         await wait(29000); // Акт 1 — 29 секунд
 
         video.pause();
-        container.classList.add("disappear");
-        await wait(800);
-
+        container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
       });
@@ -1327,12 +1325,10 @@
 
         await loadAndPlayVideo(video, tapOverlay, loader);
 
-        await wait(46000); // Акт 2 — 46 секунд
+        await wait(47000); // Акт 2 — 47 секунд
 
         video.pause();
-        container.classList.add("disappear");
-        await wait(800);
-
+        container.style.display = "none";
         await typeWriter(message);
         indicator.classList.add("visible");
       });
@@ -1352,26 +1348,25 @@
 
       await loadAndPlayVideo(video, tapOverlay, loader);
 
-      await wait(79000); // Акт 3 — 1:19
+      await wait(80000); // Акт 3 — 1:20
 
       video.pause();
-      container.classList.add("disappear");
-      await wait(800);
+      container.style.display = "none";
 
       await typeWriter(msg1);
 
       await wait(2000);
       msg1.style.transition = "opacity 0.5s ease";
       msg1.style.opacity = "0";
-
       await wait(500);
+
       await typeWriter(msg2);
 
       await wait(2000);
       msg2.style.transition = "opacity 0.5s ease";
       msg2.style.opacity = "0";
+      await wait(500);
 
-      await wait(1000);
       finalInfo.classList.add("appear");
       triggerExplosion();
     });
